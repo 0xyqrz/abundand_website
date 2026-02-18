@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>abundand — Building an AI Agent Fleet in Public</title>
+  <meta name="description" content="Daniel is building 23 AI agents in public. Follow the journey, learn how to build your own AI fleet, and join the newsletter." />
+  <meta property="og:title" content="abundand — Building an AI Agent Fleet in Public" />
+  <meta property="og:description" content="23 agents. Real systems. Built in public." />
+  <meta property="og:url" content="https://abundand.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:creator" content="@abundand" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --bg-card-hover: #161616;
+      --border: #1e1e1e;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.12);
+      --accent-glow: rgba(0, 255, 136, 0.25);
+      --text: #f0f0f0;
+      --text-muted: #666;
+      --text-sub: #999;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+      --max-w: 680px;
+      --radius: 12px;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 80px 0;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 20px 0;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .nav-logo span {
+      color: var(--accent);
+    }
+
+    .nav-link {
+      font-size: 0.875rem;
+      color: var(--text-sub);
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--accent);
+    }
+
+    /* ===== HERO ===== */
+    #hero {
+      padding: 120px 0 80px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--text-sub);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 48px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: #00e67a;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-sub);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* ===== STAT ROW ===== */
+    .stat-row {
+      display: flex;
+      gap: 40px;
+      margin-top: 64px;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .stat-number span {
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ===== ABOUT SECTION ===== */
+    #about {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .about-text {
+      font-size: 1.05rem;
+      color: var(--text-sub);
+      line-height: 1.8;
+    }
+
+    .about-text p + p {
+      margin-top: 16px;
+    }
+
+    /* ===== AGENT GRID ===== */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 8px;
+      margin-top: 40px;
+    }
+
+    .agent-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .agent-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .agent-chip .emoji {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    /* ===== NEWSLETTER SECTION ===== */
+    #newsletter {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .card-glow {
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 200px;
+      height: 200px;
+      background: var(--accent-glow);
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+    }
+
+    .card h2 {
+      margin-bottom: 16px;
+    }
+
+    .card-desc {
+      color: var(--text-sub);
+      margin-bottom: 32px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .newsletter-list {
+      list-style: none;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .newsletter-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: var(--text-sub);
+    }
+
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      background: var(--accent-dim);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent);
+      font-size: 0.65rem;
+    }
+
+    /* ===== PRODUCT SECTION ===== */
+    #product {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card:hover {
+      border-color: rgba(0, 255, 136, 0.3);
+      background: var(--bg-card-hover);
+    }
+
+    .soon-badge {
+      background: rgba(255, 180, 0, 0.12);
+      border: 1px solid rgba(255, 180, 0, 0.25);
+      color: #ffb400;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .product-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .product-desc {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .product-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .tag {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .footer-brand span {
+      color: var(--accent);
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .footer-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: var(--accent);
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 600px) {
+      section { padding: 60px 0; }
+      #hero { padding: 80px 0 60px; }
+      .card { padding: 32px 24px; }
+      .product-card {
+        grid-template-columns: 1fr;
+      }
+      .stat-row { gap: 28px; }
+      .agent-grid {
+        grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">abund<span>and</span></a>
+      <a href="https://x.com/abundand" target="_blank" rel="noopener" class="nav-link">
+        @abundand
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="container">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Building in Public
+      </div>
+
+      <h1>Building an <em>AI Agent Fleet</em><br>in Public</h1>
+
+      <p class="hero-sub">
+        23 agents. Real systems. Real results.
+        Watch how a full AI fleet gets built from scratch — and learn to build your own.
+      </p>
+
+      <div class="hero-ctas">
+        <a href="https://abundand.substack.com" target="_blank" rel="noopener" class="btn btn-primary">
+          Follow the Journey →
+        </a>
+        <a href="#product" class="btn btn-secondary">
+          Get the Guide
+        </a>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-number"><span>23</span></span>
+          <span class="stat-label">Agents in Fleet</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number"><span>100</span>%</span>
+          <span class="stat-label">Open Build</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number"><span>0</span></span>
+          <span class="stat-label">VC Money</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="section-label">What is this</div>
+      <h2>An AI fleet, built live.</h2>
+      <div class="about-text">
+        <p>
+          I'm Daniel (@abundand). I'm building a fleet of 23 specialized AI agents — each with a role,
+          memory, and purpose — and documenting every step in public. No BS, no hype. Just raw systems
+          thinking and real code.
+        </p>
+        <p>
+          The fleet handles trading, content, coding, research, and more. This site is the hub:
+          follow the newsletter for weekly dispatches, grab the guide when it drops, and
+          watch something genuinely new get built.
+        </p>
+      </div>
+
+      <div class="agent-grid" aria-label="Agent Fleet Preview">
+        <div class="agent-chip"><span class="emoji">📈</span>Trader</div>
+        <div class="agent-chip"><span class="emoji">💻</span>Coder</div>
+        <div class="agent-chip"><span class="emoji">🔍</span>Scout</div>
+        <div class="agent-chip"><span class="emoji">✍️</span>Writer</div>
+        <div class="agent-chip"><span class="emoji">🧠</span>Planner</div>
+        <div class="agent-chip"><span class="emoji">📊</span>Analyst</div>
+        <div class="agent-chip"><span class="emoji">🎯</span>Director</div>
+        <div class="agent-chip"><span class="emoji">🛡️</span>Guard</div>
+        <div class="agent-chip"><span class="emoji">📡</span>Feed</div>
+        <div class="agent-chip"><span class="emoji">⚡</span>+14</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section id="newsletter">
+    <div class="container">
+      <div class="card">
+        <div class="card-glow"></div>
+        <div class="section-label">Newsletter</div>
+        <h2>Follow the Journey</h2>
+        <p class="card-desc">
+          Weekly dispatches on building the fleet: what's working, what broke,
+          architecture decisions, and what the agents are actually doing.
+        </p>
+        <ul class="newsletter-list">
+          <li>
+            <span class="check-icon">✓</span>
+            <span>Behind-the-scenes builds and breakdowns</span>
+          </li>
+          <li>
+            <span class="check-icon">✓</span>
+            <span>Agent architecture deep dives</span>
+          </li>
+          <li>
+            <span class="check-icon">✓</span>
+            <span>Revenue experiments and results</span>
+          </li>
+          <li>
+            <span class="check-icon">✓</span>
+            <span>Early access to guides and tools</span>
+          </li>
+        </ul>
+        <a href="https://abundand.substack.com" target="_blank" rel="noopener" class="btn btn-primary">
+          Subscribe on Substack →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT -->
+  <section id="product">
+    <div class="container">
+      <div class="section-label">Products</div>
+      <h2>Build Your Own Fleet</h2>
+      <p style="color: var(--text-sub); margin-bottom: 40px; font-size: 1.05rem; line-height: 1.7;">
+        The exact systems, prompts, and architecture used to build abundand's AI fleet.
+      </p>
+
+      <div class="product-card">
+        <div>
+          <div class="product-title">
+            "Build Your AI Agent Fleet" — The Guide
+          </div>
+          <p class="product-desc">
+            A complete, step-by-step guide to designing and deploying a multi-agent AI system
+            from scratch. Real code, real architecture, real mistakes and how to fix them.
+            Built for builders who want AI working <em>for</em> them, not just playing with it.
+          </p>
+          <div class="product-features">
+            <span class="tag">23 agent templates</span>
+            <span class="tag">Memory systems</span>
+            <span class="tag">Orchestration</span>
+            <span class="tag">Revenue loops</span>
+            <span class="tag">Real prompts</span>
+          </div>
+          <a href="https://abundand.substack.com" target="_blank" rel="noopener" class="btn btn-secondary">
+            Join the Waitlist →
+          </a>
+        </div>
+        <div>
+          <span class="soon-badge">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">abund<span>and</span></div>
+          <div class="footer-text" style="margin-top: 6px;">Building AI fleets in public</div>
+        </div>
+        <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+          <a href="https://x.com/abundand" target="_blank" rel="noopener" class="footer-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.727-8.82-8.147-10.68H8.1l4.258 5.626 5.886-5.626zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            @abundand
+          </a>
+          <a href="https://abundand.substack.com" target="_blank" rel="noopener" class="footer-link">
+            Newsletter
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
